@@ -14,7 +14,9 @@ const register = async(req, res) => {
 
     name = name.toUpperCase();
     lastname = lastname.toUpperCase();
-    cycle = cycle.toUpperCase();
+    if(cycle){
+        cycle = cycle.toUpperCase();
+    }
 
     if(!name || !lastname || !dni || !role) return res.status(500).send({ status: "error", message: "Los campos son obligatorios" });
 
@@ -35,7 +37,7 @@ const register = async(req, res) => {
 
         // controlar duplicidad de dni
         if(exist_dni && exist_dni.length >= 1){
-            return res.status(500).send({
+            return res.status(400).send({
                 status: "error",
                 message: "El DNI ya existe en el sistema"
             });
@@ -46,7 +48,7 @@ const register = async(req, res) => {
 
         // controlar roles
         if(role !== "student" && role !== "professor" && role !== "admin"){
-            return res.status(500).send({
+            return res.status(400).send({
                 status:  "error",
                 message: "El rol de usuario no es válido"
             });
@@ -60,7 +62,7 @@ const register = async(req, res) => {
         if(role == "student"){
             // validar ciclo
             if(cycle !== "I" && cycle !== "II" && cycle !== "III" && cycle !== "IV" && cycle !== "V" && cycle !== "VI"){
-                return res.status(500).send({
+                return res.status(400).send({
                     status: "error",
                     message: "El ciclo es inválido"
                 });
@@ -147,7 +149,7 @@ const login = async(req, res) => {
 
         // devolver resultado
         return res.status(200).send({
-            status: "succes",
+            status: "success",
             message: "Identificación exitosa",
             user: {
                 id: exist_user._id,
