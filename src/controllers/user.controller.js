@@ -12,14 +12,15 @@ const register = async(req, res) => {
     // recoger datos
     let { name, lastname, dni, role, cycle } = req.body;
 
+    
+    if(!name || !lastname || !dni || !role) return res.status(500).send({ status: "error", message: "Los campos son obligatorios" });
+    
     name = name.toUpperCase();
     lastname = lastname.toUpperCase();
     if(cycle){
         cycle = cycle.toUpperCase();
     }
-
-    if(!name || !lastname || !dni || !role) return res.status(500).send({ status: "error", message: "Los campos son obligatorios" });
-
+    
     // validar que DNI sea de 8 digitos y tenga solo números
     var regex = /\D/;
     if (regex.test(dni) || dni.length != 8) {
@@ -329,7 +330,7 @@ const users = async(req, res) => {
 
 }
 
-// listar profesores para campo professor (select en agregar curso)
+// listar profesores para select professor (select en agregar curso)
 const professors = async(req, res) => {
     // recoger usuario
     const { role } = req.user;

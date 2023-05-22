@@ -240,7 +240,7 @@ const remove = async(req, res) => {
 
 }
 
-// ver cursos por ciclo (ciclo del estudiante) para registro de asistencia
+// ver cursos y profesores por ciclo (ciclo del estudiante) para registro de asistencia
 const cycleCourses = async(req, res) => {
     // recoger usuario
     const { name, lastname, cycle, role } = req.user;
@@ -254,7 +254,7 @@ const cycleCourses = async(req, res) => {
     }
 
     try{
-        // consuta a cursos de acuerdo a ciclo del estudiante
+        // consulta a cursos de acuerdo a ciclo del estudiante
         const cycle_courses = await Course.find({ "cycle": cycle })
             .select({ "name": 1, "professor": 1, "cycle": 1 })
             .populate("professor", "name lastname cycle")
