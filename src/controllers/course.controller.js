@@ -22,7 +22,9 @@ const add = async(req, res) => {
 
     // recoger datos de formulario
     let { name, professor, cycle } = req.body;
-
+    
+    if(!name || !professor || !cycle) return res.status(400).send({ status: "error", message: "Campos vacíos" }); 
+    
     name = name.toUpperCase();
     cycle = cycle.toUpperCase();
 
