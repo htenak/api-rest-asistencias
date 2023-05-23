@@ -305,6 +305,7 @@ const users = async(req, res) => {
         const users = await User.find({ 
             "_id": { $ne: id }  // excluye de la consulta al id logueado
         })
+        .select({ "password": 0 })
         .sort({ "name": 1 });   // orden alfabetico
 
         // si no hay usuarios
