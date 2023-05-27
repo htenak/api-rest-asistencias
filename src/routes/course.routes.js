@@ -11,5 +11,6 @@ router.put("/update/:id", check.auth, CourseControllers.update);
 router.delete("/remove/:id", check.auth, CourseControllers.remove);
 router.get("/cycle-courses", check.auth, CourseControllers.cycleCourses);
 router.get("/my-courses", check.auth, CourseControllers.myCourses);
+router.get("/course/:id", check.auth, CourseControllers.course);
 
 module.exports = router;

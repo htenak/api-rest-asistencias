@@ -23,9 +23,10 @@ const register = async(req, res) => {
     // recoger datos del formulario
     let { professor, course } = req.body;
 
-    if(!cycle || !professor || !course || !id){
+    if(!professor || !course){
         return res.status(400).send({
             status: "error",
+            situation: "vacios",
             message: "Todos los campos son obligatorios"
         });
     }
@@ -45,6 +46,7 @@ const register = async(req, res) => {
         if(!exist_course){
             return res.status(400).send({ 
                 status: "error", 
+                situation: "diferentes",
                 message: "El profesor o curso seleccionado pertenece a un ciclo distinto" 
             });
         }

@@ -141,7 +141,11 @@ const update = async(req, res) => {
 
     // validar que lleguen todos los campos
     if (!name || !professor || !cycle) {
-        return res.status(400).send({ status: "error", message: "Todos los campos son obligatorios" });
+        return res.status(400).send({ 
+            status: "error", 
+            situation: "vacios",
+            message: "Todos los campos son obligatorios" 
+        });
     }
 
     name = name.toUpperCase();
@@ -175,6 +179,7 @@ const update = async(req, res) => {
         if(exist_course){
             return res.status(400).send({
                 status: "error",
+                situation: "existe",
                 message: "El curso ya existe"
             });
         }
@@ -342,6 +347,42 @@ const myCourses = async(req, res) => {
 
 }
 
+// ver curso para editar
+const course = async(req, res) => {
+    const { role } = req.user;
+    if(role !== "admin"){
+        return res.status(401).send({
+            status: "error",
+            message: "Solo usuarios de tipo admin pueden ver el curso a editar"
+        });
+    }
+    
+    const { id } = req.params;
+    
+    try{
+        const exist_course = await Course.findById({"_id": id})
+            .select({ "name": 1, "professor": 1, "cycle": 1 })
+            .populate("professor", "name lastname");
+        if(!exist_course) {
+            return res.status(404).send({
+               status: "error",
+               message: "El curso no existe"
+            });
+        }
+        
+        return res.status(200).send({
+            status: "success",
+            course: exist_course
+        });
+        
+    }catch(err){
+        return res.status(500).send({
+            status: "error",
+            message: "Error en la consulta"
+        });
+    }
+    
+}    
 
 module.exports = {
     test,
@@ -350,5 +391,6 @@ module.exports = {
     update,
     remove,
     cycleCourses,
-    myCourses
+    myCourses,
+    course
 }

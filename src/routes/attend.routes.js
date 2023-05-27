@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const AttendControllers = require("../controllers/attend.controler");
+const AttendControllers = require("../controllers/attend.controller");
 const check = require("../middlewares/auth");
 
 const router = Router();
