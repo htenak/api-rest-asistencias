@@ -8,12 +8,12 @@ const test = (req, res) => {
 }
 
 // registrar asistencia
-const register = async(req, res) => {
+const register = async (req, res) => {
     // recoger usuario
     const { id, role, cycle } = req.user;
 
     // validar rol de usuario
-    if(role !== "student"){
+    if (role !== "student") {
         return res.status(401).send({
             status: "error",
             message: "Solo usuarios de tipo student pueden registrar asistencias"
@@ -23,7 +23,7 @@ const register = async(req, res) => {
     // recoger datos del formulario
     let { professor, course } = req.body;
 
-    if(!professor || !course){
+    if (!professor || !course) {
         return res.status(400).send({
             status: "error",
             situation: "vacios",
@@ -31,23 +31,23 @@ const register = async(req, res) => {
         });
     }
 
-    try{
+    try {
         // que el profesor realmente exista
         const exist_prof = await User.findById(professor);
-        if(exist_prof.role !== "professor"){
+        if (exist_prof.role !== "professor") {
             return res.status(400).send({
                 status: "error",
                 message: "El profesor seleccionado no existe"
             });
         }
-        
+
         // que el curso y profesor realmente exista segun el ciclo del estudiante
         const exist_course = await Course.findOne({ "_id": course, "cycle": cycle, "professor": professor });
-        if(!exist_course){
-            return res.status(400).send({ 
-                status: "error", 
+        if (!exist_course) {
+            return res.status(400).send({
+                status: "error",
                 situation: "diferentes",
-                message: "El profesor o curso seleccionado pertenece a un ciclo distinto" 
+                message: "El profesor o curso seleccionado pertenece a un ciclo distinto"
             });
         }
 
@@ -63,13 +63,13 @@ const register = async(req, res) => {
         const saved_attend = await new_attend.save();
 
         // respuesta
-        return res.status(200).send({ 
-            status: "success", 
+        return res.status(200).send({
+            status: "success",
             message: "Asistencia guardada con exito",
             savedAttend: saved_attend
         });
 
-    }catch(err){
+    } catch (err) {
         return res.status(400).send({
             status: "error",
             message: "Error al registrar la asistencia"
@@ -79,31 +79,31 @@ const register = async(req, res) => {
 }
 
 // ver todas las asistencias (para admin)
-const attends = async(req, res) => {
+const attends = async (req, res) => {
     // recoger usuario
     const { role } = req.user;
 
     // validar rol de usuario
-    if(role !== "admin"){
+    if (role !== "admin") {
         return res.status(401).send({
             status: "error",
             message: "Solo usuarios de tipo admin pueden ver todas las asistencias"
         });
     }
 
-    try{
+    try {
         // consulta de asistencias
         const exist_attends = await Attend.find({})
             .populate("student professor course", "name lastname")
-            .sort({"date": -1});
-        
-        if(exist_attends.length < 1) {
-            return res.status(500).send({ 
-                status: "error", 
-                message: "Aún no hay asistencias registradas" 
+            .sort({ "date": -1 });
+
+        if (exist_attends.length < 1) {
+            return res.status(500).send({
+                status: "error",
+                message: "Aún no hay asistencias registradas"
             });
         }
-            
+
         // recorrer asistecnias y dar fomato a fecha
         const attends_formated = exist_attends.map(attends => ({
             ...attends._doc,    // ...attends para copiar todas las propiedades encontradas y ._doc para acceder a la info
@@ -116,7 +116,7 @@ const attends = async(req, res) => {
             attends: attends_formated
         });
 
-    }catch(err){
+    } catch (err) {
         return res.status(400).send({
             status: "error",
             message: "Error en la consulta"
@@ -126,23 +126,23 @@ const attends = async(req, res) => {
 }
 
 // asistencias de estudiante
-const myAttends = async(req, res) => {
+const myAttends = async (req, res) => {
     const { id, role } = req.user;
 
-    if(role !== "student"){
+    if (role !== "student") {
         return res.status(401).send({
             status: "error",
             message: "Solo usuarios de tipo student pueden ver sus asistencias"
         });
     }
 
-    try{
+    try {
         // consulta
-        const attends_student = await Attend.find({"student": id})
+        const attends_student = await Attend.find({ "student": id })
             .populate("professor course", "name lastname")
-            .sort({"date": -1});
+            .sort({ "date": -1 });
 
-        if(attends_student.length < 1){
+        if (attends_student.length < 1) {
             return res.status(200).send({
                 status: "success",
                 message: "Aún no has registrado asistencias"
@@ -162,7 +162,7 @@ const myAttends = async(req, res) => {
             attendsStudent: attends_formated
         });
 
-    }catch(err){
+    } catch (err) {
         return res.status(400).send({
             status: "error",
             message: "Error en la consulta"
@@ -172,22 +172,22 @@ const myAttends = async(req, res) => {
 }
 
 // asistencias que verán los profesores
-const courseAttends = async(req, res) => {
+const courseAttends = async (req, res) => {
     const { id, role } = req.user;
-    if(role !== "professor"){
+    if (role !== "professor") {
         return res.status(401).send({
             status: "error",
             message: "Solo usuarios de tipo professor pueden ver asistencias en sus cursos"
         });
     }
-    
-    try{
+
+    try {
         // consulta
         const course_attends = await Attend.find({ "professor": id })
             .populate("student course", "name lastname")
-            .sort({"date": -1});
+            .sort({ "date": -1 });
 
-        if(course_attends.length < 1){
+        if (course_attends.length < 1) {
             return res.status(200).send({
                 status: "success",
                 message: "Aún no hay asistencias en tus cursos"
@@ -207,7 +207,7 @@ const courseAttends = async(req, res) => {
             attendsStudent: attends_formated
         });
 
-    }catch(err){
+    } catch (err) {
         return res.status(400).send({
             status: "error",
             message: "Error en la consulta"

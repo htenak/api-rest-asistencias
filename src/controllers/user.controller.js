@@ -3,68 +3,76 @@ const User = require("../models/User");
 const jwt = require("../services/jwt");
 
 // ruta de prueba
-const test =  (req, res) => {
+const test = (req, res) => {
     res.send("Ruta de prueba Usuario");
 }
 
 // registrar 
-const register = async(req, res) => {
+const register = async (req, res) => {
     // recoger datos
     let { name, lastname, dni, role, cycle } = req.body;
 
-    
-    if(!name || !lastname || !dni || !role) return res.status(500).send({ status: "error", message: "Los campos son obligatorios" });
-    
+
+    if (!name || !lastname || !dni || !role) return res.status(500).send({ 
+        status: "error", 
+        situation: "vacios",
+        message: "Los campos son obligatorios" 
+    });
+
     name = name.toUpperCase();
     lastname = lastname.toUpperCase();
-    if(cycle){
+    if (cycle) {
         cycle = cycle.toUpperCase();
     }
-    
+
     // validar que DNI sea de 8 digitos y tenga solo números
     var regex = /\D/;
     if (regex.test(dni) || dni.length != 8) {
         return res.status(500).send({
             status: "error",
+            situation: "no_dni",
             message: "El DNI debe ser de 8 digitos y contener solo números"
         });
     }
 
     try {
         // buscar si existe dni en db
-        const exist_dni = await User.find({ 
+        const exist_dni = await User.find({
             "dni": dni
         });
 
         // controlar duplicidad de dni
-        if(exist_dni && exist_dni.length >= 1){
+        if (exist_dni && exist_dni.length >= 1) {
             return res.status(400).send({
                 status: "error",
+                situation: "existe",
                 message: "El DNI ya existe en el sistema"
             });
         }
-        
+
         // rol por defecto
-        if(!role) role = "student";
+        if (!role) role = "student";
 
         // controlar roles
-        if(role !== "student" && role !== "professor" && role !== "admin"){
+        if (role !== "student" && role !== "professor" && role !== "admin") {
             return res.status(400).send({
-                status:  "error",
+                status: "error",
+                situation: "mal_usuario",
                 message: "El rol de usuario no es válido"
             });
         }
-        
+
         // cifrar clave
         const pass = await bcrypt.hash(dni, 10);
         let password = pass;
 
         // crear objeto (con ciclo si es rol student)
-        if(role == "student"){
+        if (role == "student") {
             // validar ciclo
-            if(cycle !== "I" && cycle !== "II" && cycle !== "III" && cycle !== "IV" && cycle !== "V" && cycle !== "VI"){
+            if (cycle !== "I" && cycle !== "II" && cycle !== "III" && cycle !== "IV" && cycle !== "V" && cycle !== "VI") {
                 return res.status(400).send({
                     status: "error",
+                    situation: "no_ciclo",
                     message: "El ciclo es inválido"
                 });
             }
@@ -77,10 +85,10 @@ const register = async(req, res) => {
                 role,
                 cycle
             });
-            
+
             // guardar usuario en db y devolver resultado
             const user_saved = await user_new.save();
-            if(user_saved) {
+            if (user_saved) {
                 return res.status(200).json({
                     status: "success",
                     message: "Usuario registrado con exito",
@@ -88,7 +96,7 @@ const register = async(req, res) => {
                 });
             }
 
-        }else{
+        } else {
 
             let user_new = new User({
                 name,
@@ -97,10 +105,10 @@ const register = async(req, res) => {
                 password,
                 role
             });
-            
+
             // guardar usuario en db y devolver resultado
             const user_saved = await user_new.save();
-            if(user_saved) {
+            if (user_saved) {
                 return res.status(200).json({
                     status: "success",
                     message: "Usuario registrado con exito",
@@ -109,27 +117,27 @@ const register = async(req, res) => {
             }
         }
 
-    }catch(err){
+    } catch (err) {
         res.status(400).send({
             status: "error",
             message: "No se pudo registrar al usuario"
         });
     }
-    
+
 }
 
 // iniciar sesión
-const login = async(req, res) => {
+const login = async (req, res) => {
     // recoger datos
     let { dni, password } = req.body;
 
-    if(!dni || !password) return res.status(500).send({ status: "error", message: "Los campos son obligatorios" });
+    if (!dni || !password) return res.status(500).send({ status: "error", message: "Los campos son obligatorios" });
 
     try {
         // buscar existencia de dni en db
         const exist_user = await User.findOne({ "dni": dni });
 
-        if(!exist_user){
+        if (!exist_user) {
             return res.status(404).send({
                 status: "error",
                 message: "El usuario no existe"
@@ -138,7 +146,7 @@ const login = async(req, res) => {
 
         // comprobar pass correcta
         const pass = bcrypt.compareSync(password, exist_user.password);
-        if(!pass){
+        if (!pass) {
             return res.status(400).send({
                 status: "error",
                 message: "Los datos son incorrectos"
@@ -163,9 +171,9 @@ const login = async(req, res) => {
             token
         });
 
-    }catch(err){
+    } catch (err) {
         return res.status(404).send({
-            status: "error", 
+            status: "error",
             message: "Error en la consulta"
         });
     }
@@ -173,30 +181,30 @@ const login = async(req, res) => {
 }
 
 // actualizar clave
-const update = async(req, res) => {
+const update = async (req, res) => {
     // recoger datos de usuario
     const { id } = req.user;
 
     // recoger datos a actualizar
     let { password } = req.body;
-    
-    if(!password) return res.status(500).send({ status: "error", message: "El campo está vacio" });
+
+    if (!password) return res.status(500).send({ status: "error", message: "El campo está vacio" });
 
     try {
         // cifrar la password a actualizar
-        if(password){
+        if (password) {
             const new_pass = await bcrypt.hash(password, 10);
             password = new_pass;
         }
-        
+
         // buscar usuario logueado y actualizar password
         const updated_user = await User.findByIdAndUpdate(
             { "_id": id },
             { "password": password },
-            { new: true }    
+            { new: true }
         );
-        
-        if(!updated_user) return res.status(500).send({ status: "error", message: "No se pudo actualizar tu clave" });
+
+        if (!updated_user) return res.status(500).send({ status: "error", message: "No se pudo actualizar tu clave" });
 
         // devolver resultado
         return res.status(200).send({
@@ -204,21 +212,21 @@ const update = async(req, res) => {
             message: "Tu clave fue actualizada con exito"
         });
 
-    }catch(err){
+    } catch (err) {
         return res.status(500).send({
             status: "error",
             message: "Error al actualizar el usuario"
         });
     }
-    
+
 }
 
 // perfil
-const profile = async(req, res) => {
+const profile = async (req, res) => {
     // recoger datos de usuario logueado
     const { id } = req.user;
-    
-    try{
+
+    try {
         // buscar usuario en db
         const exist_user = await User.findById({ "_id": id })
             .select({ password: 0 });
@@ -228,7 +236,7 @@ const profile = async(req, res) => {
             user: exist_user
         });
 
-    }catch(err){
+    } catch (err) {
         return res.status(404).send({
             status: "error",
             message: "Error en la consulta"
@@ -238,7 +246,7 @@ const profile = async(req, res) => {
 }
 
 // eliminar usuario (solo rol admin pueden hacerlo)
-const remove = async(req, res) => {
+const remove = async (req, res) => {
     // recoger rol de usuario logueado
     const { id, role } = req.user;
 
@@ -246,22 +254,22 @@ const remove = async(req, res) => {
     let id_to_remove = req.params.id;
 
     // varificar que el usuario es admin
-    if(role !== "admin") {
+    if (role !== "admin") {
         return res.status(401).send({
             status: "error",
             message: "Solo usuarios de rol 'admin' pueden eliminar usuarios"
         });
     }
 
-    try{
+    try {
         // buscar usuario a eliminar
-        const user_to_remove = await User.findById({"_id": id_to_remove});
-        
+        const user_to_remove = await User.findById({ "_id": id_to_remove });
+
         // verficar que existe usuario a eliminar
-        if(!user_to_remove) return res.status(404).send({status: "error", message: "El usuario a eliminar no existe"});
-        
+        if (!user_to_remove) return res.status(404).send({ status: "error", message: "El usuario a eliminar no existe" });
+
         // validar que un usuario no se elimine a si mismo
-        if(user_to_remove._id == id){
+        if (user_to_remove._id == id) {
             return res.status(500).send({
                 status: "error",
                 message: "No puedes auto eliminarte"
@@ -269,7 +277,7 @@ const remove = async(req, res) => {
         }
 
         // eliminar usuario y devolver resultado
-        const user_removed = await User.findByIdAndDelete({"_id": user_to_remove._id})
+        const user_removed = await User.findByIdAndDelete({ "_id": user_to_remove._id })
             .select({ password: 0 });
 
         return res.status(200).send({
@@ -278,7 +286,7 @@ const remove = async(req, res) => {
             userDeleted: user_removed
         });
 
-    }catch(err){
+    } catch (err) {
         return res.status(500).send({
             status: "error",
             message: "Error al eliminar el usuario"
@@ -288,28 +296,28 @@ const remove = async(req, res) => {
 }
 
 // listar usuarios (vista para admin)
-const users = async(req, res) => {
+const users = async (req, res) => {
 
     const { id, role } = req.user;
 
     // validar que solo admins puedan ver a otros usuarios
-    if(role !== "admin"){
+    if (role !== "admin") {
         return res.status(401).send({
             status: "error",
             message: "Solo usuarios de tipo admin pueden ver a otros usuarios"
         });
     }
 
-    try{
+    try {
         // consultar usuarios
-        const users = await User.find({ 
+        const users = await User.find({
             "_id": { $ne: id }  // excluye de la consulta al id logueado
         })
-        .select({ "password": 0 })
-        .sort({ "name": 1 });   // orden alfabetico
+            .select({ "password": 0 })
+            .sort({ "name": 1 });   // orden alfabetico
 
         // si no hay usuarios
-        if(users.length < 1){
+        if (users.length < 1) {
             return res.status(200).send({
                 status: "success",
                 message: "Aún no hay otros usuarios registrados"
@@ -322,7 +330,7 @@ const users = async(req, res) => {
             total: users.length
         });
 
-    }catch(err){
+    } catch (err) {
         return res.status(404).send({
             status: "error",
             message: "Error en la consulta"
@@ -332,38 +340,38 @@ const users = async(req, res) => {
 }
 
 // listar profesores para select professor (select en agregar curso)
-const professors = async(req, res) => {
+const professors = async (req, res) => {
     // recoger usuario
     const { role } = req.user;
 
     // validar rol de usuario
-    if(role !== "admin"){
+    if (role !== "admin") {
         return res.status(401).send({
             status: "error",
             message: "Solo usuarios de tipo admin pueden ver a los profesores registrados"
         });
     }
-        
-    try{
+
+    try {
         // buscar y popular profesores
         const exist_prof = await User.find({ "role": "professor" })
             .select({ "name": 1, "lastname": 1, "role": 1 })
             .sort({ "name": 1 });
-        
+
         // si no hay profesores registrados
-        if(exist_prof.length < 1){
+        if (exist_prof.length < 1) {
             return res.status(200).send({
                 status: "success",
                 message: "Aún no hay profesores registrados"
             });
         }
-        
+
         return res.status(200).send({
             status: "success",
             professors: exist_prof
         });
-        
-    }catch(err){
+
+    } catch (err) {
         return res.status(400).send({
             status: "error",
             message: "Error en la consulta"

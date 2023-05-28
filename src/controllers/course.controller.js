@@ -8,12 +8,12 @@ const test = (req, res) => {
 }
 
 // agregar curso
-const add = async(req, res) => {
+const add = async (req, res) => {
     // recoger usuario
     const { role } = req.user;
 
     // validar rol de usuario
-    if(role !== "admin"){
+    if (role !== "admin") {
         return res.status(401).send({
             status: "error",
             message: "Solo usuarios de tipo admin pueden añadir cursos"
@@ -22,17 +22,17 @@ const add = async(req, res) => {
 
     // recoger datos de formulario
     let { name, professor, cycle } = req.body;
-    
-    if(!name || !professor || !cycle) return res.status(400).send({ status: "error", message: "Campos vacíos" }); 
-    
+
+    if (!name || !professor || !cycle) return res.status(400).send({ status: "error", message: "Campos vacíos" });
+
     name = name.toUpperCase();
     cycle = cycle.toUpperCase();
 
-    try{
+    try {
         // validar que profesor seleccionado exista en db
         const exist_prof = await User.findById(professor);
-        
-        if(exist_prof.role !== "professor"){
+
+        if (exist_prof.role !== "professor") {
             return res.status(400).send({
                 status: "error",
                 message: "El profesor seleccionado no existe"
@@ -40,7 +40,7 @@ const add = async(req, res) => {
         }
 
         // validar ciclo
-        if(cycle !== "I" && cycle !== "II" && cycle !== "III" && cycle !== "IV" && cycle !== "V" && cycle !== "VI"){
+        if (cycle !== "I" && cycle !== "II" && cycle !== "III" && cycle !== "IV" && cycle !== "V" && cycle !== "VI") {
             return res.status(400).send({
                 status: "error",
                 message: "El ciclo seleccionado es inválido"
@@ -48,13 +48,13 @@ const add = async(req, res) => {
         }
 
         // buscar si existe el curso por nombre, profesor y ciclo
-        const exist_course = await Course.findOne({ 
+        const exist_course = await Course.findOne({
             name,
             professor,
             cycle
         });
 
-        if(exist_course){
+        if (exist_course) {
             return res.status(400).send({
                 status: "error",
                 message: "El curso ya existe"
@@ -77,27 +77,27 @@ const add = async(req, res) => {
             professor: (exist_prof.name + " " + exist_prof.lastname)
         });
 
-    }catch(err){
+    } catch (err) {
         console.log(err)
         return res.status(400).send({
             status: "error",
             message: "Error al guardar curso"
         });
     }
-    
+
 }
 
 // ver todos los cursos (calquier rol puede acceder)
-const courses = async(req, res) => {
-    try{
+const courses = async (req, res) => {
+    try {
         // consultar cursos
         const exist_courses = await Course.find({})
-            .select({"name": 1, "professor": 1, "cycle": 1})
+            .select({ "name": 1, "professor": 1, "cycle": 1 })
             .populate('professor', 'name lastname')  // del objeto professor conseguir su name y lastname
-            .sort({"name": 1});
+            .sort({ "name": 1 });
 
         // si no hay cursos
-        if(exist_courses.length < 1){
+        if (exist_courses.length < 1) {
             return res.status(200).send({
                 status: "success",
                 message: "Aún no hay cursos registrados"
@@ -111,7 +111,7 @@ const courses = async(req, res) => {
             total: exist_courses.length
         });
 
-    }catch(err){
+    } catch (err) {
         console.log(err)
         return res.status(404).send({
             status: "error",
@@ -121,12 +121,12 @@ const courses = async(req, res) => {
 }
 
 // actualizar curso
-const update = async(req, res) => {
+const update = async (req, res) => {
 
     const { role } = req.user;
 
     // validar rol de usuario
-    if(role !== "admin"){
+    if (role !== "admin") {
         return res.status(401).send({
             status: "error",
             message: "Solo usuarios de tipo admin pueden actualizar cursos"
@@ -141,20 +141,20 @@ const update = async(req, res) => {
 
     // validar que lleguen todos los campos
     if (!name || !professor || !cycle) {
-        return res.status(400).send({ 
-            status: "error", 
+        return res.status(400).send({
+            status: "error",
             situation: "vacios",
-            message: "Todos los campos son obligatorios" 
+            message: "Todos los campos son obligatorios"
         });
     }
 
     name = name.toUpperCase();
     cycle = cycle.toUpperCase();
 
-    try{
+    try {
         // validar que profesor seleccionado exista en db
         const exist_prof = await User.findById(professor);
-        if(exist_prof.role !== "professor"){
+        if (exist_prof.role !== "professor") {
             return res.status(500).send({
                 status: "error",
                 message: "El profesor seleccionado no existe"
@@ -162,7 +162,7 @@ const update = async(req, res) => {
         }
 
         // validar ciclo
-        if(cycle !== "I" && cycle !== "II" && cycle !== "III" && cycle !== "IV" && cycle !== "V" && cycle !== "VI"){
+        if (cycle !== "I" && cycle !== "II" && cycle !== "III" && cycle !== "IV" && cycle !== "V" && cycle !== "VI") {
             return res.status(500).send({
                 status: "error",
                 message: "El ciclo seleccionado es inválido"
@@ -170,13 +170,13 @@ const update = async(req, res) => {
         }
 
         // buscar si existe el curso por nombre, profesor y ciclo
-        const exist_course = await Course.findOne({ 
+        const exist_course = await Course.findOne({
             name,
             professor,
             cycle
         });
 
-        if(exist_course){
+        if (exist_course) {
             return res.status(400).send({
                 status: "error",
                 situation: "existe",
@@ -198,7 +198,7 @@ const update = async(req, res) => {
             updatedCourse: updated_course
         });
 
-    }catch(err){
+    } catch (err) {
         return res.status(400).send({
             status: "error",
             message: "Error al actualizar el curso"
@@ -208,11 +208,11 @@ const update = async(req, res) => {
 }
 
 // eliminar curso
-const remove = async(req, res) => {
+const remove = async (req, res) => {
     const { role } = req.user;
 
     // validar rol de usuario
-    if(role !== "admin"){
+    if (role !== "admin") {
         return res.status(401).send({
             status: "error",
             message: "Solo usuarios de tipo admin pueden eliminar cursos"
@@ -221,10 +221,10 @@ const remove = async(req, res) => {
 
     const { id } = req.params;
 
-    try{
+    try {
         // consultar a db y eliminar
-        const deleted_course = await Course.findByIdAndDelete({"_id": id});
-        if(!deleted_course){
+        const deleted_course = await Course.findByIdAndDelete({ "_id": id });
+        if (!deleted_course) {
             return res.status(500).send({
                 status: "error",
                 message: "El curso ya fue eliminado"
@@ -237,7 +237,7 @@ const remove = async(req, res) => {
             deletedCourse: deleted_course
         });
 
-    }catch(err){
+    } catch (err) {
         console.log(err)
         return res.status(400).send({
             status: "error",
@@ -248,29 +248,29 @@ const remove = async(req, res) => {
 }
 
 // ver cursos y profesores por ciclo (ciclo del estudiante) para registro de asistencia
-const cycleCourses = async(req, res) => {
+const cycleCourses = async (req, res) => {
     // recoger usuario
     const { name, lastname, cycle, role } = req.user;
 
     // validar rol de usuario
-    if(role !== "student"){
+    if (role !== "student") {
         return res.status(401).send({
             status: "error",
             message: "Solo usuarios de tipo student pueden ver cursos de acuerdo a su ciclo"
         });
     }
 
-    try{
+    try {
         // consulta a cursos de acuerdo a ciclo del estudiante
         const cycle_courses = await Course.find({ "cycle": cycle })
             .select({ "name": 1, "professor": 1, "cycle": 1 })
             .populate("professor", "name lastname cycle")
             .sort({ "name": 1 });
 
-        if(cycle_courses.length < 1){
-            return res.status(200).send({ 
-                status: "success", 
-                message: "Aun no hay cursos para tu ciclo" 
+        if (cycle_courses.length < 1) {
+            return res.status(200).send({
+                status: "success",
+                message: "Aun no hay cursos para tu ciclo"
             });
         }
 
@@ -282,7 +282,7 @@ const cycleCourses = async(req, res) => {
             cycleCourses: cycle_courses
         });
 
-    }catch(err){
+    } catch (err) {
         return res.status(500).send({
             status: "error",
             message: "Error en la consulta"
@@ -291,54 +291,38 @@ const cycleCourses = async(req, res) => {
 
 }
 
-// cursos en los que el estudiante asistió
-const myCourses = async(req, res) => {
+// cursos del estudiante (segun si ciclo)
+const myCourses = async (req, res) => {
 
-    const { id, role } = req.user;
-    if(role !== "student"){
+    const { role, cycle } = req.user;
+    if (role !== "student") {
         return res.status(401).send({
             status: "error",
-            message: "Solo usuarios de tipo student pueden ver los cursos a los que asistieron"
+            message: "Solo usuarios de tipo student pueden ver sus cursos"
         });
     }
 
-    try{
-        const my_courses_attends = await Attend.find({ "student": id })
-            .select({ course: 1 })
-            .populate("course", "name")
-            .sort({ "course.name": 1 });
+    try {
+        const exist_my_courses = await Course.find({ "cycle": cycle })
+            .select({ name: 1 })
+            .sort({ "course": 1 });
 
-        
-        if(my_courses_attends.length < 1){
+
+        if (exist_my_courses.length < 1) {
             return res.status(200).send({
                 status: "success",
-                message: "Aún no hay cursos en los que hayas asistido"
+                message: "Aún no hay cursos para tu ciclo"
             });
         }
 
-        // crear un Set para almacenar los cursos unicos
-        const unique_courses = new Set();
-
-        // filtrar y obtener solo los cursos unicos
-        const my_courses = my_courses_attends.filter((attend) => {
-            const course_id = attend.course._id.toString();
-
-            if(unique_courses.has(course_id)){
-                return false; // si ya tiene el curso no la agrega al Set()
-            }else{
-                unique_courses.add(course_id);
-                return true; // si aun no tiene el curso lo agrega al Set()
-            }
-        });
-        
         return res.status(200).send({
             status: "success",
-            total: my_courses.length,
-            myCourses: my_courses
+            total: exist_my_courses.length,
+            myCourses: exist_my_courses
         });
 
 
-    }catch(err){
+    } catch (err) {
         return res.status(400).send({
             status: "error",
             message: "Error en la consulta"
@@ -348,41 +332,41 @@ const myCourses = async(req, res) => {
 }
 
 // ver curso para editar
-const course = async(req, res) => {
+const course = async (req, res) => {
     const { role } = req.user;
-    if(role !== "admin"){
+    if (role !== "admin") {
         return res.status(401).send({
             status: "error",
             message: "Solo usuarios de tipo admin pueden ver el curso a editar"
         });
     }
-    
+
     const { id } = req.params;
-    
-    try{
-        const exist_course = await Course.findById({"_id": id})
+
+    try {
+        const exist_course = await Course.findById({ "_id": id })
             .select({ "name": 1, "professor": 1, "cycle": 1 })
             .populate("professor", "name lastname");
-        if(!exist_course) {
+        if (!exist_course) {
             return res.status(404).send({
-               status: "error",
-               message: "El curso no existe"
+                status: "error",
+                message: "El curso no existe"
             });
         }
-        
+
         return res.status(200).send({
             status: "success",
             course: exist_course
         });
-        
-    }catch(err){
+
+    } catch (err) {
         return res.status(500).send({
             status: "error",
             message: "Error en la consulta"
         });
     }
-    
-}    
+
+}
 
 module.exports = {
     test,
