@@ -368,6 +368,43 @@ const course = async (req, res) => {
 
 }
 
+// cursos que enseñar los profesores (vista para professor)
+const coursesProfessor = async(req, res) => {
+    const { id, role } = req.user;
+    
+    if (role !== "professor") {
+        return res.status(401).send({
+            status: "error",
+            message: "Solo usuarios de tipo professor pueden ver a los cursos que enseñan"
+        });
+    }
+
+    try{   
+        const exist_courses = await Course.find({"professor": id})
+            .select({"name": 1});
+
+        if(!exist_courses){
+            return res.status(200).send({
+                status: "success",
+                message: "Aún no hay cursos que enseñas"
+            });
+        }
+
+        return res.status(200).send({
+            status: "success",
+            total: exist_courses.length,
+            coursesProfessor: exist_courses
+        });
+
+    }catch(err){
+        return res.status(400).send({
+            status: "error",
+            message: "Error en la consulta"
+        });
+    }
+
+}
+
 module.exports = {
     test,
     add,
@@ -376,5 +413,6 @@ module.exports = {
     remove,
     cycleCourses,
     myCourses,
-    course
+    course,
+    coursesProfessor
 }

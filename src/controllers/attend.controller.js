@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const Course = require("../models/Course");
 const Attend = require("../models/Attend");
+const moment = require("moment");
 
 // ruta de prueba
 const test = (req, res) => {

@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
 const jwt = require("../services/jwt");
+const Course = require("../models/Course");
 
 // ruta de prueba
 const test = (req, res) => {
