@@ -98,7 +98,7 @@ const attends = async (req, res) => {
             .populate("student professor course", "name lastname")
             .sort({ "date": -1 });
 
-        if (exist_attends.length < 1) {
+        if (!exist_attends.length) {
             return res.status(500).send({
                 status: "error",
                 message: "Aún no hay asistencias registradas"
@@ -217,6 +217,45 @@ const courseAttends = async (req, res) => {
 
 }
 
+// eliminar todas las asistencias
+const removeAttends = async (req, res) => {
+
+    const { role } = req.user;
+
+    if (role !== "admin") {
+        return res.status(401).send({
+            status: "error",
+            message: "Solo usuarios de tipo admin pueden eliminar todas las asistencias"
+        });
+    }
+
+    try {
+        // consultar cursos
+        const deleted_attends = await Attend.deleteMany({});
+
+        if (!deleted_attends) {
+            return res.status(500).send({
+                status: "error",
+                situation: "no-attends",
+                message: "No hay asistencias para eliminar"
+            });
+        }
+
+        // resultado
+        return res.status(200).send({
+            status: "success",
+            situation: "eliminados",
+            message: "Todas las asistencias fueron eliminadas",
+            courses: deleted_attends
+        });
+
+    } catch (err) {
+        return res.status(400).send({
+            status: "error",
+            message: "Error en la consulta"
+        });
+    }
+}
 
 
 module.exports = {
@@ -224,5 +263,6 @@ module.exports = {
     register,
     attends,
     myAttends,
-    courseAttends
+    courseAttends,
+    removeAttends
 }

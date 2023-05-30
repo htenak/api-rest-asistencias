@@ -112,7 +112,6 @@ const courses = async (req, res) => {
         });
 
     } catch (err) {
-        console.log(err)
         return res.status(404).send({
             status: "error",
             message: "Error en la consulta"
@@ -405,6 +404,46 @@ const coursesProfessor = async(req, res) => {
 
 }
 
+// eliminar todos los cursos
+const removeCourses = async (req, res) => {
+
+    const { role } = req.user;
+
+    if (role !== "admin") {
+        return res.status(401).send({
+            status: "error",
+            message: "Solo usuarios de tipo admin pueden eliminar todos los cursos"
+        });
+    }
+
+    try {
+        // consultar cursos
+        const deleted_courses = await Course.deleteMany({});
+
+        if (!deleted_courses) {
+            return res.status(500).send({
+                status: "error",
+                situation: "no-cursos",
+                message: "No hay cursos para eliminar"
+            });
+        }
+
+        // resultado
+        return res.status(200).send({
+            status: "success",
+            situation: "eliminados",
+            message: "Todos los cursos fueron eliminados",
+            courses: deleted_courses
+        });
+
+    } catch (err) {
+        return res.status(400).send({
+            status: "error",
+            message: "Error en la consulta"
+        });
+    }
+}
+
 module.exports = {
     test,
     add,
@@ -414,5 +453,6 @@ module.exports = {
     cycleCourses,
     myCourses,
     course,
-    coursesProfessor
+    coursesProfessor,
+    removeCourses
 }

@@ -14,10 +14,10 @@ const register = async (req, res) => {
     let { name, lastname, dni, role, cycle } = req.body;
 
 
-    if (!name || !lastname || !dni || !role) return res.status(500).send({ 
-        status: "error", 
+    if (!name || !lastname || !dni || !role) return res.status(500).send({
+        status: "error",
         situation: "vacios",
-        message: "Los campos son obligatorios" 
+        message: "Los campos son obligatorios"
     });
 
     name = name.toUpperCase();
@@ -381,6 +381,84 @@ const professors = async (req, res) => {
 
 }
 
+// eliminar todos los estudiantes
+const removeStudents = async (req, res) => {
+    const { role } = req.user;
+
+    if (role !== "admin") {
+        return res.status(401).send({
+            status: "error",
+            message: "Solo usuarios de tipo admin pueden eliminar a todos los estudiantes"
+        });
+    }
+
+    try {
+        const students_deleted = await User.deleteMany({ "role": "student" });
+
+        if (!students_deleted) {
+            return res.status(500).send({
+                status: "error",
+                situation: "no-estudiantes",
+                message: "No hay estudiantes para eliminar"
+            });
+        }
+
+        return res.status(200).send({
+            status: "success",
+            situation: "eliminados",
+            message: "Todos los usuarios de tipo student fueron eliminados",
+            studentsDeleted: students_deleted
+        });
+
+    } catch (err) {
+        return res.status(400).send({
+            status: "error",
+            situation: "mal-consulta",
+            message: "Error en la consulta"
+        });
+    }
+
+}
+
+// eliminar todos los profesores
+const removeProfessors = async (req, res) => {
+    const { role } = req.user;
+
+    if (role !== "admin") {
+        return res.status(401).send({
+            status: "error",
+            message: "Solo usuarios de tipo admin pueden eliminar a todos los profesores"
+        });
+    }
+
+    try {
+        const professors_deleted = await User.deleteMany({ "role": "professor" });
+
+        if (!professors_deleted) {
+            return res.status(500).send({
+                status: "error",
+                situation: "no-profesores",
+                message: "No hay profesores para eliminar"
+            });
+        }
+
+        return res.status(200).send({
+            status: "success",
+            situation: "eliminados",
+            message: "Todos los usuarios de tipo professor fueron eliminados",
+            professorsDeleted: professors_deleted
+        });
+
+    } catch (err) {
+        return res.status(400).send({
+            status: "error",
+            situation: "mal-consulta",
+            message: "Error en la consulta"
+        });
+    }
+
+}
+
 
 module.exports = {
     test,
@@ -390,5 +468,7 @@ module.exports = {
     profile,
     remove,
     users,
-    professors
+    professors,
+    removeStudents,
+    removeProfessors
 };

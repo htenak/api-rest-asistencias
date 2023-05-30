@@ -13,5 +13,6 @@ router.get("/cycle-courses", check.auth, CourseControllers.cycleCourses);
 router.get("/my-courses", check.auth, CourseControllers.myCourses);
 router.get("/course/:id", check.auth, CourseControllers.course);
 router.get("/courses-professor", check.auth, CourseControllers.coursesProfessor);
+router.delete("/remove-courses", check.auth, CourseControllers.removeCourses);
 
 module.exports = router;
