@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const connection = async() => {
-    const uri = "mongodb://127.0.0.1:27017/attends_nor";
+    const uri = "mongodb+srv://kaneth:kaneth_1305@cluster0.eyg5j4m.mongodb.net/attendsitedb?retryWrites=true&w=majority";
     try{
         await mongoose.connect(uri);
         console.log("Conexion a la base de datos exitosa");
